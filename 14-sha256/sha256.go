@@ -3,8 +3,8 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
-	"strings"
+//	"fmt"
+//	"strings"
 	"math"
 )
 
@@ -96,37 +96,6 @@ func setupConstants() {
 
 func main() {
 
-	fmt.Printf("h0 = 0x%08x\n", h0)
-	fmt.Printf("h1 = 0x%08x\n", h1)
-	fmt.Printf("h2 = 0x%08x\n", h2)
-	fmt.Printf("h3 = 0x%08x\n", h3)
-	fmt.Printf("h4 = 0x%08x\n", h4)
-	fmt.Printf("h5 = 0x%08x\n", h5)
-	fmt.Printf("h6 = 0x%08x\n", h6)
-	fmt.Printf("h7 = 0x%08x\n", h7)
-
-  // sha256([]byte {0x80})
-  inputs := []string{
-    "hello world",
-    "Alphabet",
-    "Go is awesome!",
-    "SHA-256 hashing",
-  }
-
-  // Test the sha256 function with each input
-  for _, input := range inputs {
-		hash, intermediateStates := sha256([]byte(input))
-		fmt.Printf("Input: %s\nHash: %x\n\n", input, hash)
-
-		// Print intermediate states
-		fmt.Println("Intermediate States:")
-		for i, state := range intermediateStates {
-			fmt.Printf("Block %d: %08x %08x %08x %08x %08x %08x %08x %08x\n",
-				i+1, state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7])
-		}
-		fmt.Println(strings.Repeat("-", 50))
-  }
-  debugSHA256()
 }
 
 func sha256 (message []byte) ([32]byte, [][8]uint32) {
@@ -205,7 +174,7 @@ func sha256 (message []byte) ([32]byte, [][8]uint32) {
 
   digestByteArr := digest.Bytes()
 
-  fmt.Printf("%x\n\n", digestByteArr)
+  // fmt.Printf("%x\n\n", digestByteArr)
   return [32]byte(digestByteArr), intermediateStates
 
 }
