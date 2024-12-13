@@ -1,9 +1,10 @@
 package main
 
-/** import (
+ import (
   "fmt"
   "strings"
-) */
+  "errors"
+)
 
 var alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 var textPlusShift int
@@ -15,7 +16,20 @@ const (
   RIGHT
 )
 
-func encrypt (text string, shift int, shiftDirection ShiftDirection) string {
+func encrypt (text string, shift int, shiftDirection ShiftDirection) (string, error) {
+
+  if shift < 0 {
+    return "", errors.New("shift value cannot be negative")
+  }
+
+  if shiftDirection != LEFT && shiftDirection != RIGHT {
+    return "", errors.New("invalid shift direction")
+  }
+
+  if !strings.ContainsAny(text, alphabet+" ") {
+    return "", errors.New("text contains invalid characters")
+  }
+
 
   var encryptedText string = ""
   
@@ -46,10 +60,10 @@ func encrypt (text string, shift int, shiftDirection ShiftDirection) string {
     encryptedText += string(alphabet[textPlusShift % 26])
   }
 
-  return encryptedText
+  return encryptedText, nil
 }
 
-func decrypt (text string, shift int, shiftDirection ShiftDirection) string {
+func decrypt (text string, shift int, shiftDirection ShiftDirection) (string, error) {
   decryptedText := ""
   
   for _, c := range text {
@@ -68,9 +82,27 @@ func decrypt (text string, shift int, shiftDirection ShiftDirection) string {
    
   }
 
-  return decryptedText
+  return decryptedText, nil
 }
 
 func main () {
+   text := "HELLO"
+        shift := 3
+        shiftDirection := RIGHT
 
+        encryptedText, err := encrypt(text, shift, shiftDirection)
+        if err != nil {
+                fmt.Println(err)
+                return
+        }
+
+        fmt.Println("Encrypted Text:", encryptedText)
+
+        decryptedText, err := decrypt(encryptedText, shift, shiftDirection)
+        if err != nil {
+                fmt.Println(err)
+                return
+        }
+
+        fmt.Println("Decrypted Text:", decryptedText)
 }
