@@ -1,5 +1,5 @@
 
-#Caesar Cipher Implementation in Go
+# Caesar Cipher Implementation in Go
 
 This folder contains a simple implementation of the Caesar Cipher algorithm in Go. 
 The Caesar Cipher is a type of substitution cipher where each letter in the plaintext is 'shifted' a certain number of places down the alphabet.
