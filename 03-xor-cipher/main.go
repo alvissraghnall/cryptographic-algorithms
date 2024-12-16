@@ -7,12 +7,6 @@ import (
 )
 
 func main () {
-    fmt.Println(binary("Wiki"))
-    fmt.Println([]byte(binary("1")))
-
-    fmt.Println(Encrypt("HELLO", "101ComputingKey"))
-    fmt.Println(Decrypt("0111100101110101011111010000111100100000", "101ComputingKey"))
-//    fmt.Println(Decrypt("101ComputingKey"))
 }
 
 func binary(s string) string {
