@@ -1,10 +1,27 @@
 package main
 
+import (
+  "errors"
+  "math"
+)
 
-func encrypt (text, key string) {
-  key = removeSpaces(toUpperCase(key))
+func encrypt (text, key string) (string, error) {
+  
+  if len(text) == 0 || len(key) == 0 {
+    return "", errors.New("Text and key must contain at least one character!")
+  }
+
+  errText, errKey := checkAlphabet(text), checkAlphabet(key)
+  if errText != nil {
+    return "", errText
+  } 
+  if errKey != nil {
+    return "", errKey
+  }
+
+  text, key = removeSpaces(toUpperCase(text)), removeSpaces(toUpperCase(key))
   numColumns := len(key)
-  numRows := (len(text) + numColumns - 1 + numColumns - 1) / numColumns
+  numRows := int(math.Ceil(float64(len(text)) / float64(numColumns)))
 
   table := make([][]rune, numRows)
   for i := range table {
@@ -25,7 +42,6 @@ func encrypt (text, key string) {
   }
 
   perm := sortedKeyIndices(key)
-	fmt.Println(perm)
 
 	var encryptedText string
 	for _, colIndex := range perm {
@@ -35,5 +51,6 @@ func encrypt (text, key string) {
 			}
 		}
 	}
-	return encryptedText	
+
+	return encryptedText, nil
 }

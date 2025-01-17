@@ -2,6 +2,8 @@ package main
 
 import (
   "strings"
+  "errors"
+  "regexp"
   "sort"
 )
 
@@ -48,4 +50,15 @@ func sortedKeyIndices(key string) []int {
 		return key[sortedIndices[i]] < key[sortedIndices[j]]
 	})
 	return sortedIndices
+}
+
+func checkAlphabet(s string) error {
+	match, err := regexp.MatchString("^[a-zA-Z\\s]+$", s)
+	if err != nil {
+		return err
+	}
+	if !match {
+		return errors.New("string contains non-alphabet characters")
+	}
+	return nil
 }
