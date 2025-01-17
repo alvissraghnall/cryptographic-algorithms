@@ -1,0 +1,71 @@
+name: Test and Report Coverage
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  run-tests:
+    name: Run Tests for All Projects
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: "1.21.x"
+
+    - name: Find and Test All Projects
+      id: run-tests
+      run: |
+        # Initialize results
+        echo "test_results=" > $GITHUB_ENV
+        export test_results=""
+
+        # Find all directories with `go.mod` and test them
+        for dir in $(find . -name "go.mod" -exec dirname {} \;); do
+          echo "Running tests in $dir"
+          pushd $dir
+
+          if ls *_test.go > /dev/null 2>&1; then
+            # Run tests and capture output
+            test_output=$(go test -v)
+            echo "$test_output"
+
+            # Collect results
+            test_passed=$(echo "$test_output" | grep -c "PASS")
+            test_failed=$(echo "$test_output" | grep -c "FAIL")
+            export test_results="$test_results\n$dir: Passed=$test_passed, Failed=$test_failed"
+          else
+            echo "No tests found in $dir"
+          fi
+
+          popd
+        done
+
+        # Save the test results to environment
+        echo "test_results=$test_results" >> $GITHUB_ENV
+
+    - name: Display Results
+      run: |
+        echo "Test Results:"
+        echo "$test_results"
+
+    - name: Update README with Results
+      if: success()
+      run: |
+        # Replace a placeholder section in README with test results
+        sed -i '/<!-- TEST_RESULTS_START -->/,/<!-- TEST_RESULTS_END -->/c\
+        <!-- TEST_RESULTS_START -->\nTest Results:\n$test_results\n<!-- TEST_RESULTS_END -->' README.md
+
+        # Commit the updated README
+        git config user.name "GitHub Actions"
+        git config user.email "actions@github.com"
+        git add README.md
+        git commit -m "Update README with test results" || echo "No changes to commit"
+        git push

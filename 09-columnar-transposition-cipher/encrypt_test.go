@@ -2,7 +2,7 @@ package main
 
 import (
 	"testing"
-	"errors"
+//	"errors"
 )
 
 func TestEncrypt(t *testing.T) {
@@ -48,7 +48,7 @@ func TestEncrypt(t *testing.T) {
 			// Check if error occurred as expected
 			if err == nil {
 				t.Errorf("encrypt(%q, %q) expected error, got none", test.plaintext, test.key)
-			} else if !errors.Is(err, errors.New(test.errMsg)) {
+			} else if  err.Error() != test.errMsg {
 				t.Errorf("encrypt(%q, %q) expected error %q, got %q", test.plaintext, test.key, test.errMsg, err.Error())
 			}
 		} else {
