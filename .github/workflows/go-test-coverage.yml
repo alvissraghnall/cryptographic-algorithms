@@ -20,12 +20,16 @@ jobs:
         with:
           go-version: '^1.23.2'
 
-      - name: Run Tests and Generate Coverage
+      
+      - name: Run Tests and Generate Coverage 
         run: |
           for dir in $(find . -type d -name '*'); do
             if [ -f "$dir/go.mod" ]; then
               echo "Running tests for $dir"
-              go test -v -coverprofile="$dir/coverage/cover.out" -covermode=atomic -coverpkg="$dir/..." "$dir"
+              cd "$dir"
+              mkdir -p coverage
+              go test -v -coverprofile="coverage/cover.out" -covermode=atomic -coverpkg="./..." "."
+              cd ..
             fi
           done
 
