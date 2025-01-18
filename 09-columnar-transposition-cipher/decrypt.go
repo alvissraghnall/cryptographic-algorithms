@@ -31,11 +31,13 @@ func decrypt (ciphertext, key string) (string, error) {
   for i := range table {
     table[i] = make([]rune, numColumns)
   }
- 
+
+/* 
   indexMap := make(map[string]int)
   for i, val := range key {
     indexMap[val] = i
   }
+*/
 
   index := 0
   for i, _ := range sortedKey {
