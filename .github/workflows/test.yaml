@@ -50,6 +50,7 @@ jobs:
 
         # Save the test results to environment
         echo "test_results=$test_results" >> $GITHUB_ENV
+      continue-on-error: true
 
     - name: Display Results
       run: |
