@@ -1,0 +1,3 @@
+threshold: 80
+show-diff: true
+fail-on-below-threshold: true

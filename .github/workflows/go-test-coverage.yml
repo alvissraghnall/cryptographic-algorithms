@@ -1,0 +1,40 @@
+name: Go Test Coverage Check
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  test-and-coverage:
+    name: Test and Coverage
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v3
+
+    - name: Setup Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: '^1.23.2'
+
+    - name: Install Dependencies
+      run: go mod tidy
+
+    - name: Run Tests and Generate Coverage
+      run: |
+        mkdir -p coverage
+        go test ./... -v -coverprofile=coverage/cover.out -covermode=atomic -coverpkg=./...
+
+    - name: Check Coverage Percentage
+      uses: vladopajic/go-test-coverage@v2
+      with:
+        config: ./.testcoverage.yml
+    - name: Generate Coverage Badge
+      run: |
+        coverage=$(go tool cover -func=coverage/cover.out | grep total | awk '{print $3}' | sed 's/%//')
+        echo "{\"schemaVersion\": 1, \"label\": \"coverage\", \"message\": \"${coverage}%\", \"color\": \"green\"}" > coverage-badge.json
+        cp coverage-badge.json public/
+
