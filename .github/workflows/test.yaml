@@ -13,9 +13,9 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        ref: ${{ github.head_ref }}
 
     - name: Set up Go
       uses: actions/setup-go@v4
@@ -67,8 +67,9 @@ jobs:
         <!-- TEST_RESULTS_START -->\nTest Results:\n$test_results\n<!-- TEST_RESULTS_END -->' README.md
 
         # Commit the updated README
-        git config user.name "GitHub Actions"
-        git config user.email "actions@github.com"
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
         git add README.md
         git commit -m "Update README with test results" || echo "No changes to commit"
         git push
