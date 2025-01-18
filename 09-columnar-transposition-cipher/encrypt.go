@@ -28,7 +28,7 @@ func encrypt (text, key string) (string, error) {
     table[i] = make([]rune, numColumns)
   }
 
-  // filling the transpositioj table …
+  // filling the transposition table …
   index := 0
   for i := 0; i < numRows; i++ {
     for j := 0; j < numColumns; j++ {
