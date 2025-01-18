@@ -4,6 +4,7 @@ import (
   "strings"
   "fmt"
   "math"
+  "errors"
 )
 
 func decipher (ciphertext, key string) (string, error) {
