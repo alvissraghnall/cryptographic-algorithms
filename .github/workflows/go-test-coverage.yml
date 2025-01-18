@@ -25,7 +25,7 @@ jobs:
           for dir in $(find . -type d -name '*'); do
             if [ -f "$dir/go.mod" ]; then
               echo "Running tests for $dir"
-              go test "$dir/..." -v -coverprofile="$dir/coverage/cover.out" -covermode=atomic -coverpkg="$dir/..."
+              go test -v -coverprofile="$dir/coverage/cover.out" -covermode=atomic -coverpkg="$dir/..." "$dir"
             fi
           done
 
