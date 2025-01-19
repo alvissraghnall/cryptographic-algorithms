@@ -20,8 +20,7 @@ jobs:
         with:
           go-version: '^1.23.2'
 
-      
-      - name: Run Tests and Generate Coverage 
+      - name: Run Tests and Generate Coverage
         run: |
           for dir in $(find . -type d -name '*'); do
             if [ -f "$dir/go.mod" ]; then
@@ -32,6 +31,10 @@ jobs:
               cd ..
             fi
           done
+
+          # Concatenate coverage data
+          find . -name "cover.out" -exec grep -h -v "^mode:" {} \; > cover.out.tmp
+          mv cover.out.tmp cover.out
 
       - name: Check Coverage Percentage
         uses: vladopajic/go-test-coverage@v2
