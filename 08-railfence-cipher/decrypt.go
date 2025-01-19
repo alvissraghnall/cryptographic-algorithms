@@ -2,8 +2,8 @@ package main
 
 import "errors"
 
-// DecryptRailFence decrypts the given ciphertext using the rail fence cipher with the specified number of rails.
-func DecryptRailFence(ciphertext string, rails int) (string, error) {
+// Decrypt decrypts the given ciphertext using the rail fence cipher with the specified number of rails.
+func Decrypt (ciphertext string, rails int) (string, error) {
   
   if len(ciphertext) == 0 || rails <= 0 {
     return "", errors.New("Invalid ciphertext, and/or rail length provided.")

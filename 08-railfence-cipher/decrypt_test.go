@@ -32,22 +32,22 @@ func TestDecryptRailFence(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := DecryptRailFence(tt.ciphertext, tt.rails)
+			result, err := Decrypt(tt.ciphertext, tt.rails)
 			if err != nil && !tt.expectError {
-				t.Errorf("DecryptRailFence(%q, %d) returned error %q; want no error", tt.ciphertext, tt.rails, err)
+				t.Errorf("Decrypt(%q, %d) returned error %q; want no error", tt.ciphertext, tt.rails, err)
 				return
 			}
 			if err == nil && tt.expectError {
-				t.Errorf("DecryptRailFence(%q, %d) did not return error; want error", tt.ciphertext, tt.rails)
+				t.Errorf("Decrypt(%q, %d) did not return error; want error", tt.ciphertext, tt.rails)
 				return
 			}
 			if tt.expectError {
 				if err.Error() != tt.expected {
-					t.Errorf("DecryptRailFence(%q, %d) = %q; want %q", tt.ciphertext, tt.rails, err.Error(), tt.expected)
+					t.Errorf("Decrypt(%q, %d) = %q; want %q", tt.ciphertext, tt.rails, err.Error(), tt.expected)
 				}
 			} else {
 				if result != tt.expected {
-					t.Errorf("DecryptRailFence(%q, %d) = %q; want %q", tt.ciphertext, tt.rails, result, tt.expected)
+					t.Errorf("Decrypt(%q, %d) = %q; want %q", tt.ciphertext, tt.rails, result, tt.expected)
 				}
 			}
 		})
@@ -59,6 +59,6 @@ func BenchmarkDecryptRailFence(b *testing.B) {
 	ciphertext := "WECRLTEERDSOEEFEAOCAIVDEN"
 	rails := 3
 	for i := 0; i < b.N; i++ {
-		DecryptRailFence(ciphertext, rails)
+		Decrypt(ciphertext, rails)
 	}
 }
