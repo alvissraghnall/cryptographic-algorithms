@@ -43,7 +43,7 @@ func encrypt (text, key string) (string, error) {
 
   perm := sortedKeyIndices(key)
 
-	var encryptedText string
+  var encryptedText string
 	for _, colIndex := range perm {
 		for _, row := range table {
 			if colIndex < len(row) {

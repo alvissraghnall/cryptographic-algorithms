@@ -41,15 +41,34 @@ func removeSpaces(s string) string {
 	}, s)
 }
 
+type indexedChar struct {
+    index int
+    char  rune
+}
+
 func sortedKeyIndices(key string) []int {
-	sortedIndices := make([]int, len(key))
-	for i := range sortedIndices {
-		sortedIndices[i] = i
-	}
-	sort.Slice(sortedIndices, func(i, j int) bool {
-		return key[sortedIndices[i]] < key[sortedIndices[j]]
-	})
-	return sortedIndices
+    indexedChars := make([]indexedChar, len(key))
+    for i, char := range key {
+        indexedChars[i] = indexedChar{i, char}
+    }
+    /*
+    sort.Slice(indexedChars, func(i, j int) bool {
+        return indexedChars[i].char < indexedChars[j].char
+    }) */
+
+    sort.Slice(indexedChars, func(i, j int) bool {
+        if indexedChars[i].char == indexedChars[j].char {
+            return indexedChars[i].index < indexedChars[j].index
+        }
+        return indexedChars[i].char < indexedChars[j].char
+    })
+
+
+    var sortedIndices []int
+    for _, indexedChar := range indexedChars {
+        sortedIndices = append(sortedIndices, indexedChar.index)
+    }
+    return sortedIndices
 }
 
 func checkAlphabet(s string) error {
