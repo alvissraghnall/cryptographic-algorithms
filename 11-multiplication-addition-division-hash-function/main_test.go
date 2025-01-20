@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"sync"
 )
 
 func TestFNV1a(t *testing.T) {
@@ -24,7 +25,7 @@ func TestFNV1a(t *testing.T) {
 
 func TestIsPrime(t *testing.T) {
 	tests := []struct {
-		num int
+		num uint64
 		want bool
 	}{
 		{2, true},
@@ -50,8 +51,8 @@ func TestIsPrime(t *testing.T) {
 
 func TestGenNextPrime(t *testing.T) {
 	tests := []struct {
-		n     int
-		want  int
+		n     uint64
+		want  uint64
 	}{
 		{2, 2},
 		{3, 3},
@@ -73,3 +74,38 @@ func TestGenNextPrime(t *testing.T) {
 	}
 }
 
+func TestMadHashMultipleTimes(t *testing.T) {
+       text := "test"
+       expected := madHash(text)
+       for i := 0; i < 100; i++ {
+              actual := madHash(text)
+              if actual != expected {
+                     t.Errorf("expected madHash to return %d, got %d", expected, actual)
+              }
+       }
+}
+
+
+func TestMadHashConcurrency(t *testing.T) {
+	text := "test"
+	var wg sync.WaitGroup
+
+	for i := 0; i < 100; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			madHash(text)
+		}()
+	}
+
+	wg.Wait()
+}
+
+
+func BenchmarkMadHash(b *testing.B) {
+	text := "test"
+	for i := 0; i < b.N; i++ {
+		madHash(text)
+	}
+}
+//*/

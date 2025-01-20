@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/rand"
-	"time"
 )
 
 func main() {
@@ -63,15 +61,14 @@ func genNextPrime (n uint64) uint64 {
 }
 
 func genMADVariables (fnvHash uint64, hashTableSize int) (a, b uint64, p uint64, m int) {
-	//  `a`: Random odd number
-	rand.Seed(time.Now().UnixNano())
-	a = uint64(rand.Int63n(int64(fnvHash/2))) * 2 + 1
+	//  `a`: odd number
+	a = 3
 
-	// `b`: Random non-negative number
-	b = uint64(rand.Int63n(int64(fnvHash + 1)))
+	// `b`: non-negative number
+	b = 17
 
 	// `p`: Prime number greater than the max FNV-1a hash value
-	p = uint64(genNextPrime(fnvHash + 1))
+	p = 18446744073709551557
 
 	// `m`: Hash table size
 	m = hashTableSize
