@@ -1,14 +1,6 @@
 package main
 
-import (
-	"fmt"
-)
-
 func main() {
-	stung := fnv1a("STUNG")
-	hex := fmt.Sprintf("%x", stung)
-
-	fmt.Println(hex)
 }
 
 func fnv1a (key string) uint64 {
