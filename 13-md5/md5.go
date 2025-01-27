@@ -1,141 +1,121 @@
 package main
 
 import (
-	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math"
 )
 
 func main() {
-//  md5([]byte("+#+#+"))
-//  md5([]byte("SAM SJSNENWJWJHSBSHSHSHSHSHWBSJAOKAjjwjsjjs722eijejdjsjsjsjsj"))
-//  md5([]byte {0x80, 0x57, 0x9A, 0x8b, 0x6d, 0x27,0x08})
-
-  hash := md5([]byte(""))
-  fmt.Printf("%x\n", md5_buf([]byte("")))
-  fmt.Printf("%x\n", hash)
-  fmt.Println(fmt.Sprintf("%x", hash) == "d41d8cd98f00b204e9800998ecf8427e")
+	hash := md5([]byte("a"))
+	fmt.Printf("%x\n", hash)
+	// Should print: 0cc175b9c0f1b6a831c399e269772661
 }
 
-func md5 (message []byte) [16]byte {
-  // APPEND PADDING BITS
-  paddedMessage := append(message, 0x80)
+func md5(message []byte) [16]byte {
+	// Initialize variables
+	var a0 uint32 = 0x67452301
+	var b0 uint32 = 0xefcdab89
+	var c0 uint32 = 0x98badcfe
+	var d0 uint32 = 0x10325476
 
-  padLength := 56 - (len(paddedMessage) % 64)
+	// Calculate padded message length
+	// It needs to be congruent to 56 (mod 64)
+	messageLen := len(message)
+	paddedLen := messageLen + 1 // Add 1 for the 0x80 byte
+	if paddedLen%64 > 56 {
+		paddedLen += 64 - (paddedLen % 64) + 56
+	} else if paddedLen%64 < 56 {
+		paddedLen += 56 - (paddedLen % 64)
+	}
+	paddedLen += 8 // Add 8 bytes for the length
 
-  if padLength < 0 {
-    padLength += 64
-  }
-  for i := 0; i < padLength; i++ {
-    paddedMessage = append(paddedMessage, 0x00)
-  }
+	// Create padded message
+	paddedMessage := make([]byte, paddedLen)
+	copy(paddedMessage, message)
+	paddedMessage[messageLen] = 0x80
 
-  // APPEND LENGTH H
-  messageLengthInBits := uint64(len(message)) * 8
-  // paddedMessage = append(paddedMessage, swapUint64(uint64(messageLengthInBits & 0xFFFFFFFFFFFFFFFF)))
-  //
-  var bytesToWrite [8]byte
-  binary.LittleEndian.PutUint64(bytesToWrite[:], messageLengthInBits)
-  paddedMessage = append(paddedMessage, bytesToWrite[:]...) 
+	// Append original length in bits at the end
+	messageLenBits := uint64(messageLen * 8)
+	binary.LittleEndian.PutUint64(paddedMessage[paddedLen-8:], messageLenBits)
 
-  // Initialize variables:
-  var a0, b0, c0, d0 uint32 = 0x67452301, 0xefcdab89 , 0x98badcfe, 0x10325476   // A
-  
-  var i uint32
-  var K [64]uint32
-  shift := [...]uint{7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21}
+	// Constants
+	var K [64]uint32
+	for i := 0; i < 64; i++ {
+		K[i] = uint32(math.Floor(math.Abs(math.Sin(float64(i+1))) * (1 << 32)))
+	}
 
-  for i = range 64 {
-    K[i] = uint32(math.Floor((1 << 32) * math.Abs(math.Sin(float64(i) + 1))))
-  }
+	s := [...]uint{
+		7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22, 7, 12, 17, 22,
+		5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20, 5, 9, 14, 20,
+		4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23, 4, 11, 16, 23,
+		6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21, 6, 10, 15, 21,
+	}
 
-  // process message in 512-bit chunks:
-  for k := 0; k < len(paddedMessage); k += 64 {
-    chunk := paddedMessage[k:min(k+64, len(paddedMessage))]
-    // fmt.Println(string(chunk))
-    M := make([]uint32, 16)
+	// Process each 512-bit chunk
+	numChunks := len(paddedMessage) / 64
+	for chunk := 0; chunk < numChunks; chunk++ {
+		// Break chunk into sixteen 32-bit words
+		M := make([]uint32, 16)
+		for j := 0; j < 16; j++ {
+			offset := chunk*64 + j*4
+			M[j] = binary.LittleEndian.Uint32(paddedMessage[offset : offset+4])
+		}
 
-    for j := range len(M) {
-      // fmt.Println(j, M, j * 4, chunk[(j * 4) + 3])
-      M[j] = uint32(chunk[j * 4]) | uint32(chunk[j*4+1] << 8) | uint32(chunk[j*4+2] << 16) | uint32(chunk[j*4+3] << 24)
-    }
+		A := a0
+		B := b0
+		C := c0
+		D := d0
 
-    A, B, C, D := a0, b0, c0, d0
+		// Main loop
+		for i := 0; i < 64; i++ {
+			var F uint32
+			var g int
 
-    for i = range 64 {
+			switch {
+			case i < 16:
+				F = (B & C) | ((^B) & D)
+				g = i
+			case i < 32:
+				F = (D & B) | ((^D) & C)
+				g = (5*i + 1) % 16
+			case i < 48:
+				F = B ^ C ^ D
+				g = (3*i + 5) % 16
+			default:
+				F = C ^ (B | (^D))
+				g = (7 * i) % 16
+			}
 
-      round := i >> 4
-      var F, g uint32 
-      switch {
-      case i >= 0 && i <= 15:
-        F = ( B & C ) | (^B & D)
-        g = i
-      
-      case i >= 16 && i <= 31:
-        F = (D & B ) | (^D & C)
-        g = ((5 * i) + 1) & 0x0F
+			F = F + A + K[i] + M[g]
+			A = D
+			D = C
+			C = B
+			B = B + leftShift(F, s[i])
+		}
 
-      case i >= 32 && i <= 47:
-        F = B ^ C ^ D 
-        g = (3 * i + 5) & 0x0F
+		a0 += A
+		b0 += B
+		c0 += C
+		d0 += D
+	}
 
-      case i >= 48 && i <= 63:
-        F = C ^ (B | ^D )
-        g = (7 * i)% 16
-      }
+	var digest [16]byte
+	binary.LittleEndian.PutUint32(digest[0:], a0)
+	binary.LittleEndian.PutUint32(digest[4:], b0)
+	binary.LittleEndian.PutUint32(digest[8:], c0)
+	binary.LittleEndian.PutUint32(digest[12:], d0)
 
-      F += A + K[i] + M[g]
+	return digest
+}
 
-      sa := shift[(round << 2) | (i & 3)]
-
-      A, D, C, B = D, C, B, leftShift(F, sa) + B 
-
-    }
-
-    a0 += A
-    b0 += B
-    c0 += C
-    d0 += D
-  }
-  
-  fmt.Println(len(paddedMessage) * 8)
-
-  var digest bytes.Buffer
-
-  binary.Write(&digest, binary.LittleEndian, []uint32{a0, b0, c0, d0})
-  digestByteArr := digest.Bytes()
-
-//  return [16]byte(digestByteArr)
-
-  var result [16]byte
-  as := [...]uint32{a0, b0, c0, d0}
-  for i, a := range as {
-          result[i*4] = byte(a)
-          result[i*4+1] = byte(a >> 8)
-          result[i*4+2] = byte(a >> 16)
-          result[i*4+3] = byte(a >> 24)
-  }
-
-  fmt.Println(digestByteArr, result)
-  return result
-
+func leftShift(x uint32, c uint) uint32 {
+	return (x << c) | (x >> (32 - c))
 }
 
 func swapUint64(val uint64) uint64 {
-	val = ((val << 8) & 0xFF00FF00FF00FF00) | ((val >> 8) & 0x00FF00FF00FF00FF)
-	val = ((val << 16) & 0xFFFF0000FFFF0000) | ((val >> 16) & 0x0000FFFF0000FFFF)
-	return (val << 32) | (val >> 32)
-}
+    val = ((val << 8) & 0xFF00FF00FF00FF00) | ((val >> 8) & 0x00FF00FF00FF00FF)
+    val = ((val << 16) & 0xFFFF0000FFFF0000) | ((val >> 16) & 0x0000FFFF0000FFFF)
 
-func min(a, b int) int {
-  if a < b {
-    return a
-  }
-  return b
-}
-
-
-func leftShift(value uint32, shift uint) uint32 {
-  return ((value << shift) | (value >> (32 - shift))) // & 0xFFFFFFFF
+    return (val << 32) | (val >> 32)
 }
