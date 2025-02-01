@@ -110,10 +110,22 @@ func main() {
 		fmt.Printf("k[%d] = 0x%08x\n", i, k[i])
 	}
 
-  sha256([]byte {0x80})
+  // sha256([]byte {0x80})
+  inputs := []string{
+    "hello world",
+    "Alphabet",
+    "Go is awesome!",
+    "SHA-256 hashing",
+  }
+
+  // Test the sha256 function with each input
+  for _, input := range inputs {
+    hash := sha256([]byte(input))
+    fmt.Printf("Input: %s\nHash: %x\n\n", input, hash)
+  }
 }
 
-func sha256 (message []byte) {
+func sha256 (message []byte) [32]byte {
   messageLen := len(message)
 
   paddedMessage := bytes.NewBuffer(message)
@@ -143,19 +155,51 @@ func sha256 (message []byte) {
 
     copy(w[:], block[:])
 
-    equal := true
-    for i := 0; i < 16; i++ {
-      if w[i] != block[i] {
-        equal = false
-        break
-      }
+    var s0, s1 uint32
+    for i := 16; i < 64; i++ {
+      s0 = (rightRotate32(w[i - 15], 7)) ^ (rightRotate32(w[i - 15], 18)) ^ (w[i - 15] >> 3)
+      s1 = (rightRotate32(w[i - 2], 17)) ^ (rightRotate32(w[i - 2], 19)) ^ (w[i - 2] >> 10)
+
+      w[i] = w[i - 16] + s0 + w[i - 7] + s1
+
     }
 
-    // Assert the result
-    if equal {
-      fmt.Println("The first 16 elements of w and block are equal.")
-    } else {
-      fmt.Println("The first 16 elements of w and block are NOT equal.")
-    } 
+    // Initialize working variables to current hash value:
+    a, b, c, d, e, f, g, h := h0, h1, h2, h3, h4, h5, h6, h7
+
+    for j := range 64 {
+      S1 := ((rightRotate32(e, 6)) ^
+        (rightRotate32(e, 11)) ^ 
+        rightRotate32(e, 25))
+
+      ch := (e & f) ^ ((^e) & g)
+      temp1 := h + S1 + ch + k[j] + w[j]
+      S0 := ((rightRotate32(a, 2)) ^
+        (rightRotate32(a, 13)) ^
+        (rightRotate32(a, 22)))
+      maj := (a & b) ^ (a & c) ^ (b & c)
+      temp2 := S0 + maj
+      
+      h, g, f, e, d, c, b, a = g, f, e, d+temp1, c, b, a, temp1+temp2
+    }
+
+    // Add the compressed chunk to the current hash value:
+    h0, h1, h2, h3, h4, h5, h6, h7 = h0+a, h1+b, h2+c, h3+d, h4+e, h5+f, h6+g, h7+h
   } 
+
+  var digest bytes.Buffer
+
+  // Write all uint32 values (h0 to h7) to the buffer in big-endian format
+  binary.Write(&digest, binary.BigEndian, []uint32{h0, h1, h2, h3, h4, h5, h6, h7})
+
+  digestByteArr := digest.Bytes()
+
+  fmt.Printf("%x\n\n", digestByteArr)
+  return [32]byte(digestByteArr)
+
+}
+
+func rightRotate32(value uint32, shift uint) uint32 {
+	shift &= 0x1F // Mask to ensure shift is within 0-31
+	return (value >> shift) | (value << (32 - shift))
 }
