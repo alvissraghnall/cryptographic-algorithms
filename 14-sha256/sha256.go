@@ -109,6 +109,8 @@ func main() {
 	for i := 0; i < 5; i++ {
 		fmt.Printf("k[%d] = 0x%08x\n", i, k[i])
 	}
+
+  sha256([]byte {0x80})
 }
 
 func sha256 (message []byte) {
@@ -132,5 +134,28 @@ func sha256 (message []byte) {
 
   binary.Write(paddedMessage, binary.BigEndian, messageLengthInBits)
 
-  
+  var block [16]uint32  // 16 * 32 = 512 bits
+  for binary.Read(paddedMessage, binary.BigEndian, &block) == nil {
+    // Process block
+    // Each block[i] contains 4 bytes in big-endian order
+      
+    var w [64]uint32
+
+    copy(w[:], block[:])
+
+    equal := true
+    for i := 0; i < 16; i++ {
+      if w[i] != block[i] {
+        equal = false
+        break
+      }
+    }
+
+    // Assert the result
+    if equal {
+      fmt.Println("The first 16 elements of w and block are equal.")
+    } else {
+      fmt.Println("The first 16 elements of w and block are NOT equal.")
+    } 
+  } 
 }
