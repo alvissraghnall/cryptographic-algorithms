@@ -140,7 +140,7 @@ func sha256 (message []byte) ([32]byte, [][8]uint32) {
   // Pre-processing 
   paddedMessage.WriteByte(0x80)
 
-  padLength := 56 - paddedMessage.Len() % 64
+  padLength := 55 - messageLen % 64
 
   if padLength < 0 {
     padLength += 64
