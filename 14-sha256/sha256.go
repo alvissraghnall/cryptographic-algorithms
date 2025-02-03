@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"strings"
 	"math"
 )
 
@@ -94,7 +95,6 @@ func setupConstants() {
 }
 
 func main() {
-	setupConstants()
 
 	fmt.Printf("h0 = 0x%08x\n", h0)
 	fmt.Printf("h1 = 0x%08x\n", h1)
@@ -104,11 +104,6 @@ func main() {
 	fmt.Printf("h5 = 0x%08x\n", h5)
 	fmt.Printf("h6 = 0x%08x\n", h6)
 	fmt.Printf("h7 = 0x%08x\n", h7)
-
-	fmt.Println("\nFirst few k values:")
-	for i := 0; i < 5; i++ {
-		fmt.Printf("k[%d] = 0x%08x\n", i, k[i])
-	}
 
   // sha256([]byte {0x80})
   inputs := []string{
@@ -120,12 +115,24 @@ func main() {
 
   // Test the sha256 function with each input
   for _, input := range inputs {
-    hash := sha256([]byte(input))
-    fmt.Printf("Input: %s\nHash: %x\n\n", input, hash)
+		hash, intermediateStates := sha256([]byte(input))
+		fmt.Printf("Input: %s\nHash: %x\n\n", input, hash)
+
+		// Print intermediate states
+		fmt.Println("Intermediate States:")
+		for i, state := range intermediateStates {
+			fmt.Printf("Block %d: %08x %08x %08x %08x %08x %08x %08x %08x\n",
+				i+1, state[0], state[1], state[2], state[3], state[4], state[5], state[6], state[7])
+		}
+		fmt.Println(strings.Repeat("-", 50))
   }
+  debugSHA256()
 }
 
-func sha256 (message []byte) [32]byte {
+func sha256 (message []byte) ([32]byte, [][8]uint32) {
+  
+  setupConstants()
+
   messageLen := len(message)
 
   paddedMessage := bytes.NewBuffer(message)
@@ -147,6 +154,8 @@ func sha256 (message []byte) [32]byte {
   binary.Write(paddedMessage, binary.BigEndian, messageLengthInBits)
 
   var block [16]uint32  // 16 * 32 = 512 bits
+  var intermediateStates [][8]uint32
+
   for binary.Read(paddedMessage, binary.BigEndian, &block) == nil {
     // Process block
     // Each block[i] contains 4 bytes in big-endian order
@@ -185,6 +194,8 @@ func sha256 (message []byte) [32]byte {
 
     // Add the compressed chunk to the current hash value:
     h0, h1, h2, h3, h4, h5, h6, h7 = h0+a, h1+b, h2+c, h3+d, h4+e, h5+f, h6+g, h7+h
+	
+	intermediateStates = append(intermediateStates, [8]uint32{h0, h1, h2, h3, h4, h5, h6, h7})
   } 
 
   var digest bytes.Buffer
@@ -195,7 +206,7 @@ func sha256 (message []byte) [32]byte {
   digestByteArr := digest.Bytes()
 
   fmt.Printf("%x\n\n", digestByteArr)
-  return [32]byte(digestByteArr)
+  return [32]byte(digestByteArr), intermediateStates
 
 }
 
